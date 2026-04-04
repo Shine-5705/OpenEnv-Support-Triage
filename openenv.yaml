@@ -1,0 +1,23 @@
+name: openenv-support-triage
+version: 0.1.0
+description: Real-world customer support triage environment for training and evaluating AI agents.
+entrypoint: openenv_support_triage.environment:SupportTriageEnv
+api:
+  reset: true
+  step: true
+  state: true
+models:
+  observation: openenv_support_triage.models:ObservationModel
+  action: openenv_support_triage.models:ActionModel
+  reward: openenv_support_triage.models:RewardModel
+tasks:
+  - id: easy_refund_and_login
+    difficulty: easy
+  - id: medium_fraud_shipping_invoice
+    difficulty: medium
+  - id: hard_enterprise_outage_bundle
+    difficulty: hard
+tags:
+  - openenv
+  - real-world
+  - customer-support
