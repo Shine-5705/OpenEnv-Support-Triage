@@ -1,14 +1,18 @@
 ---
 title: OpenEnv Support Triage
-emoji: robot
+emoji: "🤖"
 colorFrom: blue
 colorTo: green
 sdk: docker
 app_port: 7860
 tags:
   - openenv
-  - reinforcement-learning
+  - customer-support
   - agent-evals
+  - llm
+  - openai
+  - fastapi
+  - docker
 ---
 
 # OpenEnv Support Triage
