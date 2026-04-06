@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Support Triage Studio</title>
+    <style>
+      :root {
+        --bg: #081520;
+        --panel: #102433;
+        --panel-soft: #132f44;
+        --line: #2f536e;
+        --text: #ecf3f8;
+        --muted: #abc0ce;
+        --ok: #34d399;
+        --warn: #fbbf24;
+        --bad: #f87171;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.15);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Poppins", "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
+        font-size: 17px;
+        color: var(--text);
+        background:
+          radial-gradient(900px 360px at -5% -10%, #245070 0%, transparent 65%),
+          radial-gradient(860px 340px at 110% -10%, #224764 0%, transparent 60%),
+          linear-gradient(180deg, #06111a 0%, var(--bg) 100%);
+        min-height: 100vh;
+      }
+
+      .page {
+        width: min(96vw, 1500px);
+        margin: 0 auto;
+        padding: 20px 18px 28px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(7, 25, 38, 0.85);
+        padding: 10px 14px;
+        margin-bottom: 14px;
+      }
+
+      .brand {
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        font-size: 1.02rem;
+      }
+
+      .badge {
+        font-size: 0.84rem;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 5px 9px;
+      }
+
+      .help-btn {
+        margin-left: 10px;
+        width: auto;
+        border-radius: 999px;
+        font-size: 0.84rem;
+        padding: 6px 11px;
+        background: #0b2131;
+      }
+
+      .hero {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 22px;
+        background: linear-gradient(120deg, var(--accent-soft), rgba(6, 22, 32, 0.2));
+        margin-bottom: 16px;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(1.5rem, 2.2vw, 2rem);
+      }
+
+      .hero p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .coach {
+        margin-top: 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: rgba(12, 31, 45, 0.8);
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .coach strong {
+        color: var(--text);
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(520px, 1.25fr) minmax(360px, 1fr);
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: linear-gradient(180deg, var(--panel) 0%, var(--panel-soft) 100%);
+        padding: 16px;
+        box-shadow: 0 12px 24px rgba(1, 8, 14, 0.3);
+      }
+
+      .panel h2 {
+        margin: 0 0 8px;
+        font-size: 1.1rem;
+      }
+
+      .panel p.sub {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      label {
+        display: block;
+        font-size: 0.9rem;
+        color: var(--muted);
+        margin-bottom: 5px;
+      }
+
+      select, textarea, button {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #091a28;
+        color: var(--text);
+        padding: 11px 12px;
+        font-size: 0.99rem;
+      }
+
+      textarea {
+        min-height: 74px;
+        resize: vertical;
+      }
+
+      button {
+        cursor: pointer;
+        background: linear-gradient(180deg, #12405b, #0c2f44);
+        transition: transform 0.12s ease, border-color 0.12s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        border-color: var(--accent);
+      }
+
+      .btn-secondary {
+        background: #0a2030;
+      }
+
+      .quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .quick-actions button {
+        width: auto;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-size: 0.88rem;
+      }
+
+      .status-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        min-height: 40px;
+      }
+
+      .pill {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #0a1d2b;
+        padding: 6px 10px;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .pill strong { color: var(--text); }
+
+      .log {
+        margin-top: 10px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 9px;
+        background: #081522;
+        max-height: 320px;
+        overflow: auto;
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 0.88rem;
+        line-height: 1.35;
+      }
+
+      .onboarding {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 8, 13, 0.75);
+        backdrop-filter: blur(3px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+        padding: 14px;
+      }
+
+      .onboarding.hidden {
+        display: none;
+      }
+
+      .tour-card {
+        width: min(900px, 95vw);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: linear-gradient(180deg, #0f2435 0%, #0a1d2c 100%);
+        padding: 18px;
+        box-shadow: 0 20px 35px rgba(0, 0, 0, 0.4);
+      }
+
+      .tour-title {
+        font-size: 1.3rem;
+        margin: 0 0 8px;
+      }
+
+      .tour-sub {
+        color: var(--muted);
+        margin: 0 0 12px;
+      }
+
+      .tour-step {
+        display: none;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(9, 27, 40, 0.8);
+        padding: 14px;
+      }
+
+      .tour-step.active {
+        display: block;
+      }
+
+      .tour-step h3 {
+        margin: 0 0 8px;
+        font-size: 1.04rem;
+      }
+
+      .tour-step p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .tour-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+      }
+
+      .tour-dots {
+        display: flex;
+        gap: 8px;
+      }
+
+      .tour-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #35556c;
+      }
+
+      .tour-dot.active {
+        background: var(--accent);
+      }
+
+      .tour-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .tickets {
+        margin-top: 16px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: linear-gradient(180deg, #0c2030 0%, #0a1d2c 100%);
+        padding: 16px;
+      }
+
+      .ticket-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, minmax(280px, 1fr));
+      }
+
+      .ticket {
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        background: #0a1926;
+        padding: 10px;
+      }
+
+      .ticket h3 {
+        margin: 0 0 6px;
+        font-size: 0.93rem;
+      }
+
+      .ticket p {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+
+      .meta span {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 0.74rem;
+      }
+
+      .ok { color: var(--ok); }
+      .warn { color: var(--warn); }
+      .bad { color: var(--bad); }
+
+      @media (max-width: 1100px) {
+        .ticket-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="onboarding" class="onboarding">
+      <div class="tour-card">
+        <h2 class="tour-title">Welcome to Support Triage Studio</h2>
+        <p class="tour-sub">A quick 3-step tour so you can understand this environment in under a minute.</p>
+
+        <section class="tour-step active" data-step="0">
+          <h3>1. What this is</h3>
+          <p>This is a realistic customer-support simulation environment for evaluating AI agents. Your goal is to triage tickets, draft responses, and resolve issues efficiently.</p>
+        </section>
+
+        <section class="tour-step" data-step="1">
+          <h3>2. How to use it</h3>
+          <p>Choose a scenario, reset the episode, then submit actions. The ideal flow is classify ticket -> draft customer reply -> resolve with internal note. Rewards and logs update every step.</p>
+        </section>
+
+        <section class="tour-step" data-step="2">
+          <h3>3. What to look at</h3>
+          <p>Watch the Episode Guide for running score and progress, and use the Ticket Queue to inspect status changes. You can reopen this tour anytime using the Help Tour button.</p>
+        </section>
+
+        <div class="tour-nav">
+          <div class="tour-dots" id="tourDots">
+            <span class="tour-dot active"></span>
+            <span class="tour-dot"></span>
+            <span class="tour-dot"></span>
+          </div>
+          <div class="tour-actions">
+            <button id="tourBack" class="btn-secondary" type="button">Back</button>
+            <button id="tourNext" type="button">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">OpenEnv Support Triage</div>
+        <div>
+          <span class="badge">Demo Console</span>
+          <button id="helpTourBtn" class="help-btn" type="button">Help Tour</button>
+        </div>
+      </header>
+
+      <section class="hero">
+        <h1>Support Triage Studio</h1>
+        <p>Welcome. This workspace helps you simulate how a real support team triages, responds, and resolves customer requests.</p>
+        <div class="coach" id="coachText"><strong>Coach:</strong> Start by choosing a task and pressing Reset. I will suggest the next best action as the episode evolves.</div>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <h2>Action Desk</h2>
+          <p class="sub">Follow the natural flow: classify ticket, draft response, then resolve.</p>
+
+          <div class="row">
+            <div>
+              <label for="taskSelect">Scenario</label>
+              <select id="taskSelect"></select>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <button id="resetBtn">Start New Episode</button>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 10px">
+            <div>
+              <label for="actionType">Next Action</label>
+              <select id="actionType">
+                <option value="classify_ticket">classify_ticket</option>
+                <option value="draft_reply">draft_reply</option>
+                <option value="resolve_ticket">resolve_ticket</option>
+                <option value="noop">noop</option>
+              </select>
+            </div>
+            <div>
+              <label for="ticketId">Target Ticket</label>
+              <select id="ticketId"></select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 10px">
+            <div>
+              <label for="priority">Priority (for classify)</label>
+              <select id="priority">
+                <option value="">(none)</option>
+                <option>low</option>
+                <option>medium</option>
+                <option>high</option>
+                <option>urgent</option>
+              </select>
+            </div>
+            <div>
+              <label for="team">Team (for classify)</label>
+              <select id="team">
+                <option value="">(none)</option>
+                <option>support</option>
+                <option>billing</option>
+                <option>technical</option>
+                <option>risk</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top: 10px">
+            <label for="replyText">Customer Reply Draft</label>
+            <textarea id="replyText" placeholder="Write a clear, empathetic response for draft_reply"></textarea>
+          </div>
+
+          <div style="margin-top: 10px">
+            <label for="resolutionNote">Internal Resolution Note</label>
+            <textarea id="resolutionNote" placeholder="Summarize what was done and why the ticket can be closed"></textarea>
+          </div>
+
+          <div class="quick-actions" id="quickActions">
+            <button class="btn-secondary" data-template="classify">Quick Fill: Classify</button>
+            <button class="btn-secondary" data-template="reply">Quick Fill: Reply</button>
+            <button class="btn-secondary" data-template="resolve">Quick Fill: Resolve</button>
+            <button class="btn-secondary" data-template="clear">Clear Text</button>
+          </div>
+
+          <div style="margin-top: 10px">
+            <button id="stepBtn">Send Action</button>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>Episode Guide</h2>
+          <p class="sub">Track progress, rewards, and what the environment is signaling.</p>
+          <div class="status-pills" id="statusPills"></div>
+          <div class="log" id="eventLog"></div>
+        </article>
+      </section>
+
+      <section class="tickets">
+        <h2 style="margin: 0 0 10px; font-size: 1.03rem">Ticket Queue</h2>
+        <div class="ticket-grid" id="tickets"></div>
+      </section>
+    </div>
+
+    <script>
+      const taskSelect = document.getElementById("taskSelect");
+      const resetBtn = document.getElementById("resetBtn");
+      const actionType = document.getElementById("actionType");
+      const ticketId = document.getElementById("ticketId");
+      const priority = document.getElementById("priority");
+      const team = document.getElementById("team");
+      const replyText = document.getElementById("replyText");
+      const resolutionNote = document.getElementById("resolutionNote");
+      const stepBtn = document.getElementById("stepBtn");
+      const statusPills = document.getElementById("statusPills");
+      const eventLog = document.getElementById("eventLog");
+      const tickets = document.getElementById("tickets");
+      const coachText = document.getElementById("coachText");
+      const quickActions = document.getElementById("quickActions");
+      const onboarding = document.getElementById("onboarding");
+      const tourBack = document.getElementById("tourBack");
+      const tourNext = document.getElementById("tourNext");
+      const helpTourBtn = document.getElementById("helpTourBtn");
+      const tourSteps = Array.from(document.querySelectorAll(".tour-step"));
+      const tourDots = Array.from(document.querySelectorAll(".tour-dot"));
+
+      let currentState = null;
+      let currentTourStep = 0;
+
+      function esc(text) {
+        return String(text ?? "").replace(/[&<>\"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m]));
+      }
+
+      function setCoachMessage(message) {
+        coachText.innerHTML = `<strong>Coach:</strong> ${esc(message)}`;
+      }
+
+      function updateTour() {
+        tourSteps.forEach((step, index) => {
+          step.classList.toggle("active", index === currentTourStep);
+        });
+        tourDots.forEach((dot, index) => {
+          dot.classList.toggle("active", index === currentTourStep);
+        });
+        tourBack.disabled = currentTourStep === 0;
+        tourNext.textContent = currentTourStep === tourSteps.length - 1 ? "Get Started" : "Next";
+      }
+
+      function openTour() {
+        currentTourStep = 0;
+        updateTour();
+        onboarding.classList.remove("hidden");
+      }
+
+      function closeTour() {
+        onboarding.classList.add("hidden");
+      }
+
+      function setLog(lines) {
+        eventLog.innerHTML = (lines || []).map((line) => `<div>${esc(line)}</div>`).join("") || "<div>No events yet.</div>";
+      }
+
+      function inferCoachSuggestion() {
+        if (!currentState || !currentState.tickets || currentState.tickets.length === 0) {
+          return "No tickets loaded yet. Reset a task to begin.";
+        }
+        const open = currentState.tickets.find((t) => !t.priority || !t.team);
+        if (open) {
+          return `Classify ${open.ticket_id} first. Set priority and team so the workflow can move forward.`;
+        }
+        const needsReply = currentState.tickets.find((t) => t.status !== "resolved" && !t.drafted_reply);
+        if (needsReply) {
+          return `Draft a customer reply for ${needsReply.ticket_id} before resolving.`;
+        }
+        const unresolved = currentState.tickets.find((t) => t.status !== "resolved");
+        if (unresolved) {
+          return `You are ready to resolve ${unresolved.ticket_id} with a concise resolution note.`;
+        }
+        return "Great job. All tickets are resolved. You can reset and try a harder scenario.";
+      }
+
+      function renderPills(extra = {}) {
+        if (!currentState) return;
+        const doneClass = currentState.done ? "ok" : "warn";
+        const pills = [
+          ["Scenario", currentState.task_id, ""],
+          ["Step", `${currentState.step_index}/${currentState.max_steps}`, ""],
+          ["Finished", String(currentState.done), doneClass],
+          ["Score", String(currentState.running_score), ""],
+          ["Difficulty", currentState.metadata?.difficulty || "n/a", ""],
+        ];
+        if (extra.reward !== undefined) pills.push(["Last Reward", String(extra.reward), ""]);
+
+        statusPills.innerHTML = pills
+          .map(([k, v, cls]) => `<span class="pill ${cls}"><strong>${esc(k)}:</strong> ${esc(v)}</span>`)
+          .join("");
+      }
+
+      function renderTickets() {
+        if (!currentState) return;
+        tickets.innerHTML = currentState.tickets
+          .map((t) => {
+            const statusClass = t.status === "resolved" ? "ok" : t.status === "in_progress" ? "warn" : "";
+            return `
+              <article class="ticket">
+                <h3>${esc(t.ticket_id)} - ${esc(t.subject)}</h3>
+                <p>${esc(t.customer_message)}</p>
+                <div class="meta">
+                  <span>tier: ${esc(t.customer_tier)}</span>
+                  <span>priority: ${esc(t.priority || "unset")}</span>
+                  <span>team: ${esc(t.team || "unset")}</span>
+                  <span class="${statusClass}">status: ${esc(t.status)}</span>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+
+        const options = currentState.tickets
+          .map((t) => `<option value="${esc(t.ticket_id)}">${esc(t.ticket_id)} - ${esc(t.subject)}</option>`)
+          .join("");
+        ticketId.innerHTML = `<option value="">(none)</option>${options}`;
+      }
+
+      function applyQuickTemplate(name) {
+        if (name === "clear") {
+          replyText.value = "";
+          resolutionNote.value = "";
+          return;
+        }
+        if (name === "classify") {
+          actionType.value = "classify_ticket";
+          if (!priority.value) priority.value = "medium";
+          if (!team.value) team.value = "support";
+          return;
+        }
+        if (name === "reply") {
+          actionType.value = "draft_reply";
+          if (!replyText.value.trim()) {
+            replyText.value = "Thank you for reaching out. We reviewed your case, verified the details, and escalated to the right team for a safe resolution. You will receive an update shortly.";
+          }
+          return;
+        }
+        if (name === "resolve") {
+          actionType.value = "resolve_ticket";
+          if (!resolutionNote.value.trim()) {
+            resolutionNote.value = "Ticket triaged to correct owner, customer notified, and follow-up actions documented.";
+          }
+        }
+      }
+
+      async function refreshState() {
+        const res = await fetch("/state");
+        currentState = await res.json();
+        renderPills();
+        setLog(currentState.event_log || []);
+        renderTickets();
+        setCoachMessage(inferCoachSuggestion());
+      }
+
+      async function init() {
+        const health = await fetch("/health").then((r) => r.json());
+        taskSelect.innerHTML = health.tasks.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
+        await resetTask();
+      }
+
+      async function resetTask() {
+        const payload = { task_id: taskSelect.value };
+        await fetch("/reset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        await refreshState();
+      }
+
+      async function stepTask() {
+        const payload = {
+          action_type: actionType.value,
+          ticket_id: ticketId.value || null,
+          priority: priority.value || null,
+          team: team.value || null,
+          reply_text: replyText.value || null,
+          resolution_note: resolutionNote.value || null,
+        };
+
+        const res = await fetch("/step", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          setLog([`STEP ERROR: ${text}`]);
+          setCoachMessage("That action was rejected. Adjust fields and try again.");
+          return;
+        }
+
+        const data = await res.json();
+        await refreshState();
+        renderPills({ reward: data.reward?.value ?? 0 });
+      }
+
+      quickActions.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLButtonElement)) return;
+        const template = target.getAttribute("data-template");
+        if (template) applyQuickTemplate(template);
+      });
+
+      actionType.addEventListener("change", () => {
+        if (actionType.value === "classify_ticket") {
+          setCoachMessage("For classify action, set both priority and team for a valid triage step.");
+        } else if (actionType.value === "draft_reply") {
+          setCoachMessage("Write an empathetic and actionable customer response with clear next steps.");
+        } else if (actionType.value === "resolve_ticket") {
+          setCoachMessage("Add a concise internal note describing what was resolved before closing.");
+        } else {
+          setCoachMessage("Use noop only when all work is already complete.");
+        }
+      });
+
+      resetBtn.addEventListener("click", resetTask);
+      stepBtn.addEventListener("click", stepTask);
+      helpTourBtn.addEventListener("click", openTour);
+
+      tourBack.addEventListener("click", () => {
+        if (currentTourStep > 0) {
+          currentTourStep -= 1;
+          updateTour();
+        }
+      });
+
+      tourNext.addEventListener("click", () => {
+        if (currentTourStep < tourSteps.length - 1) {
+          currentTourStep += 1;
+          updateTour();
+        } else {
+          closeTour();
+        }
+      });
+
+      init().catch((err) => {
+        setLog([`INIT ERROR: ${String(err)}`]);
+        setCoachMessage("Initialization failed. Confirm the API is running and refresh this page.");
+      });
+
+      updateTour();
+    </script>
+  </body>
+</html>

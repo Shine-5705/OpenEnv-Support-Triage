@@ -1,34 +1,38 @@
-# 🤖 OpenEnv Support Triage
+---
+title: OpenEnv Support Triage
+emoji: "🤖"
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+tags:
+  - openenv
+  - customer-support
+  - agent-evals
+  - llm
+  - openai
+  - fastapi
+  - docker
+---
 
-<div align="center">
+# OpenEnv Support Triage
 
-[![OpenEnv](https://img.shields.io/badge/OpenEnv-Agent%20Platform-blue)](https://github.com/openenv-ai)
-[![Customer Support](https://img.shields.io/badge/Use%20Case-Customer%20Support-green)](https://en.wikipedia.org/wiki/Customer_support)
-[![Agent Evals](https://img.shields.io/badge/Agent-Evaluations-purple)](https://arxiv.org/abs/2308.04026)
-[![LLM](https://img.shields.io/badge/LLM-Large%20Language%20Models-orange)](https://en.wikipedia.org/wiki/Large_language_model)
-[![OpenAI](https://img.shields.io/badge/OpenAI-API-black)](https://platform.openai.com/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-Framework-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Containerization-2496ED?logo=docker)](https://www.docker.com/)
+A complete, real-world OpenEnv environment that simulates customer support ticket triage for billing, technical, risk, and general support operations.
 
-**AI-powered support triage system using LLM agents, evaluation pipelines, and scalable backend infrastructure**
+## Motivation
 
-</div>
-A real-world OpenEnv environment for evaluating agent behavior in customer support operations. The environment simulates triage work across billing, technical support, risk, and general support queues.
-
-## Why This Environment Matters
-
-Customer support triage is a production workflow teams run every day. High-quality agents must:
+Customer support triage is a real operational workflow performed by humans every day. Agents must:
 
 - infer urgency from free-form customer text
 - route tickets to the right team
 - draft actionable, policy-aware replies
 - resolve tickets efficiently without taking premature or destructive actions
 
-This environment is designed for both training and evaluation with dense rewards and deterministic grading.
+This environment is designed for agent training and evaluation with meaningful intermediate reward signals and deterministic final grading.
 
 ## OpenEnv API Compliance
 
-Implemented interfaces and models:
+The environment implements:
 
 - typed Pydantic models for observation, action, and reward
 - `reset(task_id)` -> initial observation
@@ -36,7 +40,7 @@ Implemented interfaces and models:
 - `state()` -> full internal state snapshot
 - `openenv.yaml` metadata for discovery and validation
 
-Entrypoint: `openenv_support_triage.environment:SupportTriageEnv`
+Implementation entrypoint: `openenv_support_triage.environment:SupportTriageEnv`
 
 ## Action Space
 
@@ -57,7 +61,7 @@ Fields:
 
 ## Observation Space
 
-`ObservationModel` contains:
+`ObservationModel` includes:
 
 - task metadata (`task_id`, `task_name`, `objective`)
 - trajectory progress (`step_index`, `max_steps`)
@@ -66,7 +70,7 @@ Fields:
 
 ## Reward Function
 
-Reward is shaped at each step (not just terminal):
+Reward is shaped per step (not only terminal):
 
 - step cost: small negative to encourage efficiency
 - positive partial reward for correct classification decisions
@@ -83,36 +87,11 @@ This gives dense progress signals and discourages exploitative behavior.
 2. `medium_fraud_shipping_invoice` (medium): 3 mixed tickets including urgent fraud handling
 3. `hard_enterprise_outage_bundle` (hard): 4 high-stakes tickets with outage, risk, billing, and policy edge cases
 
-Each task has a deterministic grader returning a score in [0.0, 1.0] using:
+Each task has a deterministic grader scoring 0.0-1.0 by combining:
 
 - classification quality
 - reply quality
 - resolution completeness
-
-## Project Layout
-
-- `inference.py`: required root inference script for submission
-- `openenv.yaml`: OpenEnv metadata
-- `openenv_support_triage/`: environment implementation and typed models
-- `server/app.py`: deployment app entrypoint
-- `server/cli.py`: script entrypoint for server mode
-- `scripts/pre_validate.sh`: pre-submission validator
-
-## Environment Variables
-
-Required for model-backed inference:
-
-- `API_BASE_URL` (default: `https://api.openai.com/v1`)
-- `MODEL_NAME` (default: `gpt-4.1-mini`)
-- `HF_TOKEN` (no default)
-
-Optional:
-
-- `LOCAL_IMAGE_NAME` (only needed if your workflow uses local docker image loading)
-
-All LLM calls use OpenAI client:
-
-`from openai import OpenAI`
 
 ## Setup
 
@@ -124,43 +103,65 @@ pip install -r requirements.txt
 
 ## Local Usage
 
-Run API service (local):
+Run API service:
 
 ```bash
 uvicorn app:app --host 0.0.0.0 --port 7860
 ```
 
-Smoke test:
+Quick API check:
 
 ```bash
 curl http://localhost:7860/health
 ```
 
-## Inference Script (Submission Contract)
+## Demo UI
 
-The required submission script is `inference.py` in repository root.
-
-Structured stdout logs are emitted as:
-
-- `START {...}`
-- `STEP {...}`
-- `END {...}`
-
-This satisfies required logging format.
-
-Run heuristic deterministic baseline:
+A professional browser UI is available at the root route:
 
 ```bash
-python inference.py --heuristic-only --seed 7
+http://localhost:7860/
 ```
 
-Run model-backed inference:
+UI capabilities:
+
+- task selection and reset
+- manual step execution (`classify_ticket`, `draft_reply`, `resolve_ticket`, `noop`)
+- live reward and running score display
+- ticket board with current state
+- event log for trajectory inspection
+
+## Inference Contract (Submission)
+
+Root script:
 
 ```bash
 python inference.py --seed 7
 ```
 
-## Baseline Inference (Legacy Helper)
+Required environment variables used by `inference.py`:
+
+- `API_BASE_URL` (default set)
+- `MODEL_NAME` (default set)
+- `HF_TOKEN` (no default)
+
+Optional variable:
+
+- `LOCAL_IMAGE_NAME` (used only for docker-image based local runners)
+
+All LLM calls are made with OpenAI client:
+
+```python
+from openai import OpenAI
+```
+
+Stdout uses structured records with exact markers:
+
+- `START {...}`
+- `STEP {...}`
+- `END {...}`
+
+## Baseline Inference (OpenAI API)
 
 Set credentials:
 
@@ -168,6 +169,12 @@ Set credentials:
 set API_BASE_URL=https://api.openai.com/v1
 set MODEL_NAME=gpt-4.1-mini
 set HF_TOKEN=your_token_here
+```
+
+Run reproducible baseline over all tasks using the required root script:
+
+```bash
+python inference.py --seed 7
 ```
 
 Legacy baseline runner:
@@ -184,6 +191,8 @@ python scripts/baseline_inference.py --heuristic-only
 
 The script prints per-task and aggregate scores in JSON.
 
+The script prints per-task and aggregate scores in JSON.
+
 ## Baseline Scores
 
 Expected deterministic reference with `--heuristic-only`:
@@ -197,7 +206,7 @@ OpenAI-driven scores vary by model family but are reproducible run-to-run for a 
 
 ## Docker
 
-Build and run container:
+Build and run:
 
 ```bash
 docker build -t openenv-support-triage .
@@ -208,12 +217,13 @@ docker run --rm -p 7860:7860 openenv-support-triage
 
 1. Create a new Space and choose `Docker` SDK.
 2. Push this repository to the Space.
-3. Confirm `README.md` front matter includes `tags: [openenv]`.
+3. Set Space variables/secrets: `API_BASE_URL`, `MODEL_NAME`, `HF_TOKEN`.
 4. Space will auto-build from `Dockerfile` and serve on port `7860`.
+5. Verify `GET /health` and `POST /reset` return HTTP 200.
 
 ## OpenEnv Validation
 
-Run validator:
+If you have the OpenEnv CLI installed:
 
 ```bash
 openenv validate .
@@ -223,7 +233,7 @@ This validates metadata and API compatibility.
 
 ## Pre-Submission Validator
 
-Run pre-submit checks:
+Run the repository validator before submitting:
 
 ```bash
 bash scripts/pre_validate.sh
@@ -238,8 +248,8 @@ bash scripts/pre_validate.sh
 
 ## Final Checklist
 
-- `openenv validate .` returns OK
-- `inference.py` runs and prints START/STEP/END logs
-- docker build succeeds
-- local `/health` and `/reset` return HTTP 200
-- HF Space deploys and responds successfully
+- `openenv validate .` returns ready for multi-mode deployment
+- `python inference.py --heuristic-only --seed 7` completes and prints `END`
+- `docker build -t openenv-support-triage .` succeeds
+- local API responds on `/health`, `/reset`, `/step`, and `/state`
+- HF Space responds with 200 on `/health` and `/reset`

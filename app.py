@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from openenv_support_triage.environment import SupportTriageEnv
@@ -10,10 +13,18 @@ from openenv_support_triage.tasks import TASKS
 
 app = FastAPI(title="OpenEnv Support Triage", version="0.1.0")
 env = SupportTriageEnv()
+UI_FILE = Path(__file__).resolve().parent / "ui" / "index.html"
 
 
 class ResetRequest(BaseModel):
     task_id: str
+
+
+@app.get("/", response_class=HTMLResponse)
+def home() -> str:
+    if UI_FILE.exists():
+        return UI_FILE.read_text(encoding="utf-8")
+    return "<h1>OpenEnv Support Triage</h1><p>UI file missing.</p>"
 
 
 @app.get("/health")
