@@ -1,22 +1,18 @@
----
-title: OpenEnv Support Triage
-emoji: "🤖"
-colorFrom: blue
-colorTo: green
-sdk: docker
-app_port: 7860
-tags:
-  - openenv
-  - customer-support
-  - agent-evals
-  - llm
-  - openai
-  - fastapi
-  - docker
----
+# 🤖 OpenEnv Support Triage
 
-# OpenEnv Support Triage
+<div align="center">
 
+[![OpenEnv](https://img.shields.io/badge/OpenEnv-Agent%20Platform-blue)](https://github.com/openenv-ai)
+[![Customer Support](https://img.shields.io/badge/Use%20Case-Customer%20Support-green)](https://en.wikipedia.org/wiki/Customer_support)
+[![Agent Evals](https://img.shields.io/badge/Agent-Evaluations-purple)](https://arxiv.org/abs/2308.04026)
+[![LLM](https://img.shields.io/badge/LLM-Large%20Language%20Models-orange)](https://en.wikipedia.org/wiki/Large_language_model)
+[![OpenAI](https://img.shields.io/badge/OpenAI-API-black)](https://platform.openai.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Framework-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-Containerization-2496ED?logo=docker)](https://www.docker.com/)
+
+**AI-powered support triage system using LLM agents, evaluation pipelines, and scalable backend infrastructure**
+
+</div>
 A real-world OpenEnv environment for evaluating agent behavior in customer support operations. The environment simulates triage work across billing, technical support, risk, and general support queues.
 
 ## Why This Environment Matters
