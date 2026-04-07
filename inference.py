@@ -26,8 +26,41 @@ DEFAULT_SEED = 7
 DEFAULT_MAX_RUNTIME_SECONDS = 20 * 60
 
 
-def structured_log(tag: str, payload: Dict[str, object]) -> None:
-    print(f"[{tag}] {json.dumps(payload, sort_keys=True)}", flush=True)
+def _bool_str(value: bool) -> str:
+    return "true" if value else "false"
+
+
+def _format_action(action: ActionModel) -> str:
+    parts = [f"action_type={action.action_type}"]
+    if action.ticket_id is not None:
+        parts.append(f"ticket_id={action.ticket_id}")
+    if action.priority is not None:
+        parts.append(f"priority={action.priority}")
+    if action.team is not None:
+        parts.append(f"team={action.team}")
+    if action.reply_text is not None:
+        parts.append("reply_text=present")
+    if action.resolution_note is not None:
+        parts.append("resolution_note=present")
+    return "|".join(parts)
+
+
+def log_start(task_name: str, model_name: str) -> None:
+    print(f"[START] task={task_name} env=openenv-support-triage model={model_name}", flush=True)
+
+
+def log_step(step: int, action: ActionModel, reward: float, done: bool, error: str | None) -> None:
+    error_value = error if error is not None else "null"
+    print(
+        f"[STEP] step={step} action={_format_action(action)} reward={reward:.2f} "
+        f"done={_bool_str(done)} error={error_value}",
+        flush=True,
+    )
+
+
+def log_end(success: bool, steps: int, rewards: List[float]) -> None:
+    rewards_text = ",".join(f"{r:.2f}" for r in rewards)
+    print(f"[END] success={_bool_str(success)} steps={steps} rewards={rewards_text}", flush=True)
 
 
 def heuristic_action(observation: ObservationModel) -> ActionModel:
@@ -109,32 +142,34 @@ def llm_action(client: OpenAI, model: str, observation: ObservationModel, seed: 
 def run_task(task_id: str, client: OpenAI | None, model: str, seed: int, heuristic_only: bool) -> Tuple[float, Dict[str, float], float]:
     env = SupportTriageEnv(task_id=task_id)
     observation = env.reset(task_id=task_id)
-
     done = False
+    success = False
     step_index = 0
-    while not done:
-        step_index += 1
-        if heuristic_only or client is None:
-            action = heuristic_action(observation)
-        else:
-            try:
-                action = llm_action(client=client, model=model, observation=observation, seed=seed)
-            except Exception:
-                action = heuristic_action(observation)
+    reward_values: List[float] = []
 
-        observation, reward, done, info = env.step(action)
-        structured_log(
-            "STEP",
-            {
-                "task_id": task_id,
-                "step": step_index,
-                "action_type": action.action_type,
-                "ticket_id": action.ticket_id,
-                "reward": round(reward.value, 4),
-                "done": done,
-                "running_score": info.get("running_score"),
-            },
-        )
+    log_start(task_name=task_id, model_name=model)
+
+    try:
+        while not done:
+            step_index += 1
+            if heuristic_only or client is None:
+                action = heuristic_action(observation)
+            else:
+                try:
+                    action = llm_action(client=client, model=model, observation=observation, seed=seed)
+                except Exception:
+                    action = heuristic_action(observation)
+
+            observation, reward, done, _info = env.step(action)
+            reward_values.append(reward.value)
+            log_step(step=step_index, action=action, reward=reward.value, done=done, error=None)
+
+        success = True
+    finally:
+        log_end(success=success, steps=step_index, rewards=reward_values)
+        close_fn = getattr(env, "close", None)
+        if callable(close_fn):
+            close_fn()
 
     final_state = env.state()
     score, components = grade_state(final_state)
@@ -154,22 +189,10 @@ def main() -> None:
     model_name = os.getenv("MODEL_NAME", DEFAULT_MODEL)
     hf_token = os.getenv("HF_TOKEN")
     local_image_name = os.getenv("LOCAL_IMAGE_NAME")
-    openai_api_key = os.getenv("OPENAI_API_KEY", "")
-    api_key = hf_token or openai_api_key
+    if hf_token is None:
+        raise ValueError("HF_TOKEN environment variable is required")
 
-    structured_log(
-        "START",
-        {
-            "api_base_url": api_base_url,
-            "model": model_name,
-            "seed": args.seed,
-            "heuristic_only": args.heuristic_only,
-            "local_image_name": local_image_name,
-        },
-    )
-
-    if not args.heuristic_only and not api_key:
-        raise EnvironmentError("Set HF_TOKEN (or OPENAI_API_KEY) for model inference")
+    api_key = hf_token
 
     client = None
     if not args.heuristic_only:
@@ -204,7 +227,7 @@ def main() -> None:
     aggregate = sum(scores) / len(scores) if scores else 0.0
     total_runtime = round(time.time() - started, 3)
 
-    payload = {
+    _ = {
         "api_base_url": api_base_url,
         "model": model_name,
         "seed": args.seed,
@@ -212,8 +235,8 @@ def main() -> None:
         "runtime_seconds": total_runtime,
         "aggregate_score": round(aggregate, 4),
         "tasks": task_results,
+        "local_image_name": local_image_name,
     }
-    structured_log("END", payload)
 
 
 if __name__ == "__main__":
