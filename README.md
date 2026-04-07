@@ -6,13 +6,13 @@ colorTo: green
 sdk: docker
 app_port: 7860
 tags:
-	- openenv
-	- customer-support
-	- agent-evals
-	- llm
-	- openai
-	- fastapi
-	- docker
+  - openenv
+  - customer-support
+  - agent-evals
+  - llm
+  - openai
+  - fastapi
+  - docker
 ---
 
 # 🤖 OpenEnv Support Triage
