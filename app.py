@@ -17,7 +17,7 @@ UI_FILE = Path(__file__).resolve().parent / "ui" / "index.html"
 
 
 class ResetRequest(BaseModel):
-    task_id: str
+    task_id: str | None = None
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -33,10 +33,11 @@ def health() -> dict:
 
 
 @app.post("/reset")
-def reset(req: ResetRequest):
-    if req.task_id not in TASKS:
-        raise HTTPException(status_code=400, detail=f"Unknown task_id: {req.task_id}")
-    return env.reset(task_id=req.task_id).model_dump()
+def reset(req: ResetRequest | None = None):
+    task_id = req.task_id if req and req.task_id else env.state().task_id
+    if task_id not in TASKS:
+        raise HTTPException(status_code=400, detail=f"Unknown task_id: {task_id}")
+    return env.reset(task_id=task_id).model_dump()
 
 
 @app.post("/step")
