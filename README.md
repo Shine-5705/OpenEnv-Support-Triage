@@ -205,8 +205,6 @@ python scripts/baseline_inference.py --heuristic-only
 
 The script prints per-task and aggregate scores in JSON.
 
-The script prints per-task and aggregate scores in JSON.
-
 ## Baseline Scores
 
 Expected deterministic reference with `--heuristic-only`:
@@ -229,9 +227,16 @@ docker run --rm -p 7860:7860 openenv-support-triage
 
 ## Hugging Face Spaces Deployment
 
+Live Space:
+
+- https://huggingface.co/spaces/Shinegupta/OpenEnv-Support-Triage
+- https://shinegupta-openenv-support-triage.hf.space
+
 1. Create a new Space and choose `Docker` SDK.
 2. Push this repository to the Space.
-3. Set Space variables/secrets: `API_BASE_URL`, `MODEL_NAME`, `HF_TOKEN`.
+3. Set Space configuration:
+  - Variables: `API_BASE_URL`, `MODEL_NAME`
+  - Secret: `HF_TOKEN`
 4. Space will auto-build from `Dockerfile` and serve on port `7860`.
 5. Verify `GET /health` and `POST /reset` return HTTP 200.
 
