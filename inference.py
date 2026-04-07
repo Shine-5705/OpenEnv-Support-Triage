@@ -27,7 +27,7 @@ DEFAULT_MAX_RUNTIME_SECONDS = 20 * 60
 
 
 def structured_log(tag: str, payload: Dict[str, object]) -> None:
-    print(f"{tag} {json.dumps(payload, sort_keys=True)}")
+    print(f"[{tag}] {json.dumps(payload, sort_keys=True)}", flush=True)
 
 
 def heuristic_action(observation: ObservationModel) -> ActionModel:
