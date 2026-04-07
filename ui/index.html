@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Support Triage Studio</title>
     <style>
+      html {
+        height: 100%;
+      }
+
       :root {
         --bg: #081520;
         --panel: #102433;
@@ -30,13 +34,14 @@
           radial-gradient(900px 360px at -5% -10%, #245070 0%, transparent 65%),
           radial-gradient(860px 340px at 110% -10%, #224764 0%, transparent 60%),
           linear-gradient(180deg, #06111a 0%, var(--bg) 100%);
-        min-height: 100vh;
+        min-height: 100%;
+        overflow-x: hidden;
       }
 
       .page {
-        width: min(96vw, 1500px);
+        width: 100%;
         margin: 0 auto;
-        padding: 20px 18px 28px;
+        padding: 20px 24px 30px;
       }
 
       .topbar {
@@ -47,7 +52,11 @@
         border-radius: 14px;
         background: rgba(7, 25, 38, 0.85);
         padding: 10px 14px;
-        margin-bottom: 14px;
+        margin-bottom: 16px;
+        position: sticky;
+        top: 10px;
+        z-index: 8;
+        backdrop-filter: blur(6px);
       }
 
       .brand {
@@ -76,20 +85,22 @@
       .hero {
         border: 1px solid var(--line);
         border-radius: 18px;
-        padding: 22px;
+        padding: 24px;
         background: linear-gradient(120deg, var(--accent-soft), rgba(6, 22, 32, 0.2));
-        margin-bottom: 16px;
+        margin-bottom: 18px;
       }
 
       .hero h1 {
         margin: 0;
-        font-size: clamp(1.5rem, 2.2vw, 2rem);
+        font-size: clamp(1.8rem, 2.6vw, 2.45rem);
+        line-height: 1.18;
       }
 
       .hero p {
         margin: 8px 0 0;
         color: var(--muted);
-        font-size: 0.95rem;
+        font-size: 1rem;
+        max-width: 92ch;
       }
 
       .coach {
@@ -108,15 +119,22 @@
 
       .grid {
         display: grid;
-        gap: 16px;
-        grid-template-columns: minmax(520px, 1.25fr) minmax(360px, 1fr);
+        gap: 18px;
+        grid-template-columns: minmax(640px, 1.45fr) minmax(360px, 1fr);
+      }
+
+      .workspace {
+        border: 1px solid rgba(66, 103, 129, 0.4);
+        border-radius: 18px;
+        padding: 16px;
+        background: rgba(7, 20, 31, 0.42);
       }
 
       .panel {
         border: 1px solid var(--line);
         border-radius: 16px;
         background: linear-gradient(180deg, var(--panel) 0%, var(--panel-soft) 100%);
-        padding: 16px;
+        padding: 18px;
         box-shadow: 0 12px 24px rgba(1, 8, 14, 0.3);
       }
 
@@ -129,6 +147,7 @@
         margin: 0 0 12px;
         color: var(--muted);
         font-size: 0.92rem;
+        line-height: 1.45;
       }
 
       .row {
@@ -212,7 +231,7 @@
         border-radius: 10px;
         padding: 9px;
         background: #081522;
-        max-height: 320px;
+        max-height: 420px;
         overflow: auto;
         font-family: Consolas, "Courier New", monospace;
         font-size: 0.88rem;
@@ -306,11 +325,11 @@
       }
 
       .tickets {
-        margin-top: 16px;
+        margin-top: 18px;
         border: 1px solid var(--line);
         border-radius: 16px;
         background: linear-gradient(180deg, #0c2030 0%, #0a1d2c 100%);
-        padding: 16px;
+        padding: 18px;
       }
 
       .ticket-grid {
@@ -354,18 +373,48 @@
       .warn { color: var(--warn); }
       .bad { color: var(--bad); }
 
-      @media (max-width: 1100px) {
+      @media (min-width: 1600px) {
+        .page {
+          padding-left: 34px;
+          padding-right: 34px;
+        }
+        .hero {
+          padding: 28px;
+        }
+      }
+
+      @media (max-width: 1180px) {
         .ticket-grid {
           grid-template-columns: 1fr;
         }
       }
 
       @media (max-width: 980px) {
+        .page {
+          padding: 14px;
+        }
+
+        .topbar {
+          position: static;
+        }
+
+        .workspace {
+          padding: 10px;
+        }
+
         .grid {
           grid-template-columns: 1fr;
         }
         .row {
           grid-template-columns: 1fr;
+        }
+
+        .hero h1 {
+          font-size: 1.6rem;
+        }
+
+        .log {
+          max-height: 280px;
         }
       }
     </style>
@@ -420,8 +469,9 @@
         <div class="coach" id="coachText"><strong>Coach:</strong> Start by choosing a task and pressing Reset. I will suggest the next best action as the episode evolves.</div>
       </section>
 
-      <section class="grid">
-        <article class="panel">
+      <section class="workspace">
+        <section class="grid">
+          <article class="panel">
           <h2>Action Desk</h2>
           <p class="sub">Follow the natural flow: classify ticket, draft response, then resolve.</p>
 
@@ -495,19 +545,20 @@
           <div style="margin-top: 10px">
             <button id="stepBtn">Send Action</button>
           </div>
-        </article>
+          </article>
 
-        <article class="panel">
+          <article class="panel">
           <h2>Episode Guide</h2>
           <p class="sub">Track progress, rewards, and what the environment is signaling.</p>
           <div class="status-pills" id="statusPills"></div>
           <div class="log" id="eventLog"></div>
-        </article>
-      </section>
+          </article>
+        </section>
 
-      <section class="tickets">
+        <section class="tickets">
         <h2 style="margin: 0 0 10px; font-size: 1.03rem">Ticket Queue</h2>
         <div class="ticket-grid" id="tickets"></div>
+        </section>
       </section>
     </div>
 
