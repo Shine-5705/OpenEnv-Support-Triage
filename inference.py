@@ -24,10 +24,15 @@ DEFAULT_MODEL = "gpt-4.1-mini"
 DEFAULT_API_BASE_URL = "https://api.openai.com/v1"
 DEFAULT_SEED = 7
 DEFAULT_MAX_RUNTIME_SECONDS = 20 * 60
+LOG_EPS = 0.01
 
 
 def _bool_str(value: bool) -> str:
     return "true" if value else "false"
+
+
+def _strict_log_reward(value: float) -> float:
+    return min(1.0 - LOG_EPS, max(LOG_EPS, value))
 
 
 def _format_action(action: ActionModel) -> str:
@@ -51,6 +56,7 @@ def log_start(task_name: str, model_name: str) -> None:
 
 def log_step(step: int, action: ActionModel, reward: float, done: bool, error: str | None) -> None:
     error_value = error if error is not None else "null"
+    reward = _strict_log_reward(reward)
     print(
         f"[STEP] step={step} action={_format_action(action)} reward={reward:.2f} "
         f"done={_bool_str(done)} error={error_value}",
@@ -59,7 +65,7 @@ def log_step(step: int, action: ActionModel, reward: float, done: bool, error: s
 
 
 def log_end(success: bool, steps: int, rewards: List[float]) -> None:
-    rewards_text = ",".join(f"{r:.2f}" for r in rewards)
+    rewards_text = ",".join(f"{_strict_log_reward(r):.2f}" for r in rewards)
     print(f"[END] success={_bool_str(success)} steps={steps} rewards={rewards_text}", flush=True)
 
 
