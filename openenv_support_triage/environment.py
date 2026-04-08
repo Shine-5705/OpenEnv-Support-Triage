@@ -8,11 +8,12 @@ from .models import ActionModel, EnvironmentState, ObservationModel, RewardModel
 from .tasks import TASKS, TaskSpec
 
 
-SCORE_EPS = 0.0001
+SCORE_MIN = 0.05
+SCORE_MAX = 0.95
 
 
 def _strict_score(value: float) -> float:
-    return min(1.0 - SCORE_EPS, max(SCORE_EPS, value))
+    return min(SCORE_MAX, max(SCORE_MIN, value))
 
 
 class SupportTriageEnv:
