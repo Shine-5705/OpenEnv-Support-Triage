@@ -13,6 +13,8 @@ PRIORITY_POINTS = {
     "urgent": 4,
 }
 
+SCORE_EPS = 0.0001
+
 
 def _priority_match_score(expected: str, actual: str | None) -> float:
     if actual is None:
@@ -35,12 +37,17 @@ def _reply_keyword_coverage(reply_text: str | None, keywords: list[str]) -> floa
     return hits / len(keywords)
 
 
+def _strict_open_interval(value: float) -> float:
+    return min(1.0 - SCORE_EPS, max(SCORE_EPS, value))
+
+
 def grade_state(state: EnvironmentState, task: TaskSpec | None = None) -> Tuple[float, Dict[str, float]]:
     task_spec = task if task is not None else TASKS[state.task_id]
 
     ticket_count = len(task_spec.tickets)
     if ticket_count == 0:
-        return 0.0, {"classification": 0.0, "reply_quality": 0.0, "resolution": 0.0, "overall": 0.0}
+        floor = round(SCORE_EPS, 4)
+        return floor, {"classification": floor, "reply_quality": floor, "resolution": floor, "overall": floor}
 
     observed = {t.ticket_id: t for t in state.tickets}
 
@@ -65,6 +72,7 @@ def grade_state(state: EnvironmentState, task: TaskSpec | None = None) -> Tuple[
     resolution = resolution_total / ticket_count
 
     overall = (classification * 0.4) + (reply_quality * 0.3) + (resolution * 0.3)
+    overall = _strict_open_interval(overall)
     components = {
         "classification": round(classification, 4),
         "reply_quality": round(reply_quality, 4),
