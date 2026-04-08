@@ -25,6 +25,7 @@ DEFAULT_API_BASE_URL = "https://api.openai.com/v1"
 DEFAULT_SEED = 7
 DEFAULT_MAX_RUNTIME_SECONDS = 20 * 60
 LOG_EPS = 0.01
+SCORE_EPS = 0.0001
 
 
 def _bool_str(value: bool) -> str:
@@ -33,6 +34,10 @@ def _bool_str(value: bool) -> str:
 
 def _strict_log_reward(value: float) -> float:
     return min(1.0 - LOG_EPS, max(LOG_EPS, value))
+
+
+def _strict_score(value: float) -> float:
+    return min(1.0 - SCORE_EPS, max(SCORE_EPS, value))
 
 
 def _format_action(action: ActionModel) -> str:
@@ -225,9 +230,9 @@ def main() -> None:
         )
         scores.append(score)
         task_results[task_id] = {
-            "task_score": round(score, 4),
+            "task_score": round(_strict_score(score), 4),
             "grade_components": components,
-            "trajectory_reward": round(trajectory_reward, 4),
+            "trajectory_reward": round(_strict_score(trajectory_reward), 4),
         }
 
     aggregate = sum(scores) / len(scores) if scores else 0.0
@@ -239,7 +244,7 @@ def main() -> None:
         "seed": args.seed,
         "heuristic_only": args.heuristic_only,
         "runtime_seconds": total_runtime,
-        "aggregate_score": round(aggregate, 4),
+        "aggregate_score": round(_strict_score(aggregate), 4),
         "tasks": task_results,
         "local_image_name": local_image_name,
     }
