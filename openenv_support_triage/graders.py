@@ -13,7 +13,7 @@ PRIORITY_POINTS = {
     "urgent": 4,
 }
 
-SCORE_EPS = 0.0001
+SCORE_EPS = 0.01
 
 
 def _priority_match_score(expected: str, actual: str | None) -> float:

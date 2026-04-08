@@ -21,12 +21,11 @@ from openenv_support_triage.tasks import TASKS
 
 DEFAULT_MODEL = "gpt-4.1-mini"
 DEFAULT_SEED = 7
-SCORE_MIN = 0.05
-SCORE_MAX = 0.95
+SCORE_EPS = 0.01
 
 
 def strict_score(value: float) -> float:
-    return min(SCORE_MAX, max(SCORE_MIN, value))
+    return min(1.0 - SCORE_EPS, max(SCORE_EPS, value))
 
 
 def heuristic_action(observation: ObservationModel) -> ActionModel:
