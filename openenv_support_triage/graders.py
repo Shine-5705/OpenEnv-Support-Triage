@@ -67,9 +67,9 @@ def grade_state(state: EnvironmentState, task: TaskSpec | None = None) -> Tuple[
         is_resolved = 1.0 if ticket.status == "resolved" else 0.0
         resolution_total += is_resolved
 
-    classification = classification_total / ticket_count
-    reply_quality = reply_total / ticket_count
-    resolution = resolution_total / ticket_count
+    classification = _strict_open_interval(classification_total / ticket_count)
+    reply_quality = _strict_open_interval(reply_total / ticket_count)
+    resolution = _strict_open_interval(resolution_total / ticket_count)
 
     overall = (classification * 0.4) + (reply_quality * 0.3) + (resolution * 0.3)
     overall = _strict_open_interval(overall)
