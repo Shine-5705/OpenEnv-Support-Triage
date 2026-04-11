@@ -13,7 +13,7 @@ PRIORITY_POINTS = {
     "urgent": 4,
 }
 
-SCORE_EPS = 0.01
+SCORE_EPS = 0.1
 
 
 def _priority_match_score(expected: str, actual: str | None) -> float:
@@ -41,12 +41,16 @@ def _strict_open_interval(value: float) -> float:
     return min(1.0 - SCORE_EPS, max(SCORE_EPS, value))
 
 
+def _one_decimal_score(value: float) -> float:
+    return round(_strict_open_interval(value), 1)
+
+
 def grade_state(state: EnvironmentState, task: TaskSpec | None = None) -> Tuple[float, Dict[str, float]]:
     task_spec = task if task is not None else TASKS[state.task_id]
 
     ticket_count = len(task_spec.tickets)
     if ticket_count == 0:
-        floor = round(SCORE_EPS, 4)
+        floor = round(SCORE_EPS, 1)
         return floor, {"classification": floor, "reply_quality": floor, "resolution": floor, "overall": floor}
 
     observed = {t.ticket_id: t for t in state.tickets}
@@ -67,16 +71,16 @@ def grade_state(state: EnvironmentState, task: TaskSpec | None = None) -> Tuple[
         is_resolved = 1.0 if ticket.status == "resolved" else 0.0
         resolution_total += is_resolved
 
-    classification = _strict_open_interval(classification_total / ticket_count)
-    reply_quality = _strict_open_interval(reply_total / ticket_count)
-    resolution = _strict_open_interval(resolution_total / ticket_count)
+    classification = _one_decimal_score(classification_total / ticket_count)
+    reply_quality = _one_decimal_score(reply_total / ticket_count)
+    resolution = _one_decimal_score(resolution_total / ticket_count)
 
     overall = (classification * 0.4) + (reply_quality * 0.3) + (resolution * 0.3)
-    overall = _strict_open_interval(overall)
+    overall = _one_decimal_score(overall)
     components = {
-        "classification": round(classification, 4),
-        "reply_quality": round(reply_quality, 4),
-        "resolution": round(resolution, 4),
-        "overall": round(overall, 4),
+        "classification": round(classification, 1),
+        "reply_quality": round(reply_quality, 1),
+        "resolution": round(resolution, 1),
+        "overall": round(overall, 1),
     }
     return components["overall"], components

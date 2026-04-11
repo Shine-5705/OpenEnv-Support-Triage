@@ -25,7 +25,7 @@ DEFAULT_API_BASE_URL = "https://api.openai.com/v1"
 DEFAULT_SEED = 7
 DEFAULT_MAX_RUNTIME_SECONDS = 20 * 60
 LOG_EPS = 0.01
-SCORE_EPS = 0.01
+SCORE_EPS = 0.1
 
 
 def _bool_str(value: bool) -> str:
@@ -38,6 +38,10 @@ def _strict_log_reward(value: float) -> float:
 
 def _strict_score(value: float) -> float:
     return min(1.0 - SCORE_EPS, max(SCORE_EPS, value))
+
+
+def _one_decimal_score(value: float) -> float:
+    return round(_strict_score(value), 1)
 
 
 def _format_action(action: ActionModel) -> str:
@@ -76,15 +80,15 @@ def log_end(success: bool, steps: int, rewards: List[float]) -> None:
 
 def log_score(task_id: str, task_score: float, trajectory_reward: float) -> None:
     print(
-        f"[SCORE] task={task_id} task_score={_strict_score(task_score):.2f} "
-        f"trajectory_reward={_strict_score(trajectory_reward):.2f}",
+        f"[SCORE] task={task_id} task_score={_one_decimal_score(task_score):.1f} "
+        f"trajectory_reward={_one_decimal_score(trajectory_reward):.1f}",
         flush=True,
     )
 
 
 def log_summary(aggregate_score: float, runtime_seconds: float) -> None:
     print(
-        f"[SUMMARY] aggregate_score={_strict_score(aggregate_score):.2f} runtime_seconds={runtime_seconds:.3f}",
+        f"[SUMMARY] aggregate_score={_one_decimal_score(aggregate_score):.1f} runtime_seconds={runtime_seconds:.3f}",
         flush=True,
     )
 
@@ -246,9 +250,9 @@ def main() -> None:
         log_score(task_id=task_id, task_score=score, trajectory_reward=trajectory_reward)
         scores.append(score)
         task_results[task_id] = {
-            "task_score": round(_strict_score(score), 4),
+            "task_score": _one_decimal_score(score),
             "grade_components": components,
-            "trajectory_reward": round(_strict_score(trajectory_reward), 4),
+            "trajectory_reward": _one_decimal_score(trajectory_reward),
         }
 
     aggregate = sum(scores) / len(scores) if scores else 0.0
@@ -261,7 +265,7 @@ def main() -> None:
         "seed": args.seed,
         "heuristic_only": args.heuristic_only,
         "runtime_seconds": total_runtime,
-        "aggregate_score": round(_strict_score(aggregate), 4),
+        "aggregate_score": _one_decimal_score(aggregate),
         "tasks": task_results,
         "local_image_name": local_image_name,
     }

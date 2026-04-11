@@ -21,11 +21,15 @@ from openenv_support_triage.tasks import TASKS
 
 DEFAULT_MODEL = "gpt-4.1-mini"
 DEFAULT_SEED = 7
-SCORE_EPS = 0.01
+SCORE_EPS = 0.1
 
 
 def strict_score(value: float) -> float:
     return min(1.0 - SCORE_EPS, max(SCORE_EPS, value))
+
+
+def one_decimal_score(value: float) -> float:
+    return round(strict_score(value), 1)
 
 
 def heuristic_action(observation: ObservationModel) -> ActionModel:
@@ -149,9 +153,9 @@ def main() -> None:
         )
         scores.append(score)
         results[task_id] = {
-            "task_score": round(strict_score(score), 4),
+            "task_score": one_decimal_score(score),
             "grade_components": components,
-            "trajectory_reward": round(strict_score(running_score), 4),
+            "trajectory_reward": one_decimal_score(running_score),
         }
 
     aggregate = sum(scores) / len(scores) if scores else 0.0
@@ -159,7 +163,7 @@ def main() -> None:
         "model": args.model,
         "seed": args.seed,
         "heuristic_only": args.heuristic_only,
-        "aggregate_score": round(strict_score(aggregate), 4),
+        "aggregate_score": one_decimal_score(aggregate),
         "tasks": results,
     }
     print(json.dumps(payload, indent=2))

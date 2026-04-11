@@ -8,11 +8,15 @@ from .models import ActionModel, EnvironmentState, ObservationModel, RewardModel
 from .tasks import TASKS, TaskSpec
 
 
-SCORE_EPS = 0.01
+SCORE_EPS = 0.1
 
 
 def _strict_score(value: float) -> float:
     return min(1.0 - SCORE_EPS, max(SCORE_EPS, value))
+
+
+def _one_decimal_score(value: float) -> float:
+    return round(_strict_score(value), 1)
 
 
 class SupportTriageEnv:
@@ -60,7 +64,7 @@ class SupportTriageEnv:
             done=False,
             tickets=self._build_initial_tickets(self._task),
             event_log=["Environment reset"],
-            running_score=_strict_score(0.0),
+            running_score=_one_decimal_score(0.0),
             metadata={"difficulty": self._task.difficulty},
         )
         return self._to_observation(["Start triaging tickets"])
@@ -186,8 +190,8 @@ class SupportTriageEnv:
             reward = RewardModel(value=_strict_score(0.0), components={}, explanation="Episode already finished")
             task_score = _strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score))
             return observation, reward, True, {
-                "task_score": round(task_score, 4),
-                "score": round(task_score, 4),
+                "task_score": round(task_score, 1),
+                "score": round(task_score, 1),
                 "running_score": self._state.running_score,
                 "grade": self._state.metadata.get("grade", {}),
             }
@@ -214,7 +218,7 @@ class SupportTriageEnv:
             self._state.metadata["grade"] = grade_components
 
         reward_value = round(sum(components.values()), 4)
-        self._state.running_score = round(_strict_score(self._state.running_score + reward_value), 4)
+        self._state.running_score = _one_decimal_score(self._state.running_score + reward_value)
 
         explanation = ", ".join(f"{k}={v:+.3f}" for k, v in components.items())
         reward = RewardModel(value=reward_value, components=components, explanation=explanation)
@@ -223,8 +227,8 @@ class SupportTriageEnv:
         info = {
             "task_id": self._state.task_id,
             "running_score": self._state.running_score,
-            "task_score": round(_strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score)), 4),
-            "score": round(_strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score)), 4),
+            "task_score": round(_strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score)), 1),
+            "score": round(_strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score)), 1),
             "done_reason": "all_resolved" if all_resolved else ("max_steps" if timed_out else None),
             "grade": self._state.metadata.get("grade", {}),
         }

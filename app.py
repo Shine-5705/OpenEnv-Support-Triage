@@ -16,6 +16,10 @@ env = SupportTriageEnv()
 UI_FILE = Path(__file__).resolve().parent / "ui" / "index.html"
 
 
+def _one_decimal_score(value: float) -> float:
+    return min(0.9, max(0.1, round(float(value), 1)))
+
+
 class ResetRequest(BaseModel):
     task_id: str | None = None
 
@@ -43,14 +47,14 @@ def reset(req: ResetRequest | None = None):
 @app.post("/step")
 def step(action: ActionModel):
     observation, reward, done, info = env.step(action)
-    score = info.get("score", info.get("task_score", info.get("running_score", 0.01)))
+    score = _one_decimal_score(info.get("score", info.get("task_score", info.get("running_score", 0.1))))
     return {
         "observation": observation.model_dump(),
         "reward": reward.model_dump(),
         "done": done,
         "info": info,
         "score": score,
-        "task_score": info.get("task_score", score),
+        "task_score": _one_decimal_score(info.get("task_score", score)),
     }
 
 
@@ -58,7 +62,7 @@ def step(action: ActionModel):
 def state():
     state = env.state().model_dump()
     grade = state.get("metadata", {}).get("grade", {})
-    score = grade.get("overall", 0.01)
+    score = _one_decimal_score(grade.get("overall", 0.1))
     state["score"] = score
     state["task_score"] = score
     return state
