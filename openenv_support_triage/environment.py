@@ -183,8 +183,9 @@ class SupportTriageEnv:
             raise RuntimeError("Environment has not been initialized")
         if self._state.done:
             observation = self._to_observation(["Episode already finished"])
-            reward = RewardModel(value=0.0, components={}, explanation="Episode already finished")
-            return observation, reward, True, {"task_score": _strict_score(self._state.running_score)}
+            reward = RewardModel(value=_strict_score(0.0), components={}, explanation="Episode already finished")
+            task_score = _strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score))
+            return observation, reward, True, {"task_score": round(task_score, 4), "running_score": self._state.running_score}
 
         parsed_action = action if isinstance(action, ActionModel) else ActionModel.model_validate(action)
 

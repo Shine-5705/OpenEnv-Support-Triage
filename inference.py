@@ -74,6 +74,21 @@ def log_end(success: bool, steps: int, rewards: List[float]) -> None:
     print(f"[END] success={_bool_str(success)} steps={steps} rewards={rewards_text}", flush=True)
 
 
+def log_score(task_id: str, task_score: float, trajectory_reward: float) -> None:
+    print(
+        f"[SCORE] task={task_id} task_score={_strict_score(task_score):.2f} "
+        f"trajectory_reward={_strict_score(trajectory_reward):.2f}",
+        flush=True,
+    )
+
+
+def log_summary(aggregate_score: float, runtime_seconds: float) -> None:
+    print(
+        f"[SUMMARY] aggregate_score={_strict_score(aggregate_score):.2f} runtime_seconds={runtime_seconds:.3f}",
+        flush=True,
+    )
+
+
 def heuristic_action(observation: ObservationModel) -> ActionModel:
     for ticket in observation.tickets:
         if ticket.priority is None or ticket.team is None:
@@ -228,6 +243,7 @@ def main() -> None:
             seed=args.seed,
             heuristic_only=args.heuristic_only,
         )
+        log_score(task_id=task_id, task_score=score, trajectory_reward=trajectory_reward)
         scores.append(score)
         task_results[task_id] = {
             "task_score": round(_strict_score(score), 4),
@@ -237,6 +253,7 @@ def main() -> None:
 
     aggregate = sum(scores) / len(scores) if scores else 0.0
     total_runtime = round(time.time() - started, 3)
+    log_summary(aggregate_score=aggregate, runtime_seconds=total_runtime)
 
     _ = {
         "api_base_url": api_base_url,
