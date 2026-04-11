@@ -185,7 +185,12 @@ class SupportTriageEnv:
             observation = self._to_observation(["Episode already finished"])
             reward = RewardModel(value=_strict_score(0.0), components={}, explanation="Episode already finished")
             task_score = _strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score))
-            return observation, reward, True, {"task_score": round(task_score, 4), "running_score": self._state.running_score}
+            return observation, reward, True, {
+                "task_score": round(task_score, 4),
+                "score": round(task_score, 4),
+                "running_score": self._state.running_score,
+                "grade": self._state.metadata.get("grade", {}),
+            }
 
         parsed_action = action if isinstance(action, ActionModel) else ActionModel.model_validate(action)
 
@@ -219,6 +224,7 @@ class SupportTriageEnv:
             "task_id": self._state.task_id,
             "running_score": self._state.running_score,
             "task_score": round(_strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score)), 4),
+            "score": round(_strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score)), 4),
             "done_reason": "all_resolved" if all_resolved else ("max_steps" if timed_out else None),
             "grade": self._state.metadata.get("grade", {}),
         }

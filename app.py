@@ -43,14 +43,22 @@ def reset(req: ResetRequest | None = None):
 @app.post("/step")
 def step(action: ActionModel):
     observation, reward, done, info = env.step(action)
+    score = info.get("score", info.get("task_score", info.get("running_score", 0.01)))
     return {
         "observation": observation.model_dump(),
         "reward": reward.model_dump(),
         "done": done,
         "info": info,
+        "score": score,
+        "task_score": info.get("task_score", score),
     }
 
 
 @app.get("/state")
 def state():
-    return env.state().model_dump()
+    state = env.state().model_dump()
+    grade = state.get("metadata", {}).get("grade", {})
+    score = grade.get("overall", 0.01)
+    state["score"] = score
+    state["task_score"] = score
+    return state
