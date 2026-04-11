@@ -19,6 +19,16 @@ def _one_decimal_score(value: float) -> float:
     return round(_strict_score(value), 1)
 
 
+def _public_score_payload(value: float) -> Dict[str, float]:
+    normalized = _one_decimal_score(value)
+    return {
+        "task_score": normalized,
+        "score": normalized,
+        "final_score": normalized,
+        "normalized_score": normalized,
+    }
+
+
 class SupportTriageEnv:
     """Real-world support triage simulation with OpenEnv-style API."""
 
@@ -187,14 +197,14 @@ class SupportTriageEnv:
             raise RuntimeError("Environment has not been initialized")
         if self._state.done:
             observation = self._to_observation(["Episode already finished"])
-            reward = RewardModel(value=_strict_score(0.0), components={}, explanation="Episode already finished")
+            reward = RewardModel(value=_one_decimal_score(0.0), components={}, explanation="Episode already finished")
             task_score = _strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score))
-            return observation, reward, True, {
-                "task_score": round(task_score, 1),
-                "score": round(task_score, 1),
+            info = {
+                **_public_score_payload(task_score),
                 "running_score": self._state.running_score,
                 "grade": self._state.metadata.get("grade", {}),
             }
+            return observation, reward, True, info
 
         parsed_action = action if isinstance(action, ActionModel) else ActionModel.model_validate(action)
 
@@ -221,14 +231,14 @@ class SupportTriageEnv:
         self._state.running_score = _one_decimal_score(self._state.running_score + reward_value)
 
         explanation = ", ".join(f"{k}={v:+.3f}" for k, v in components.items())
-        reward = RewardModel(value=reward_value, components=components, explanation=explanation)
+        reward = RewardModel(value=_one_decimal_score(reward_value), components=components, explanation=explanation)
 
         observation = self._to_observation([event])
+        current_task_score = _strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score))
         info = {
             "task_id": self._state.task_id,
             "running_score": self._state.running_score,
-            "task_score": round(_strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score)), 1),
-            "score": round(_strict_score(self._state.metadata.get("grade", {}).get("overall", self._state.running_score)), 1),
+            **_public_score_payload(current_task_score),
             "done_reason": "all_resolved" if all_resolved else ("max_steps" if timed_out else None),
             "grade": self._state.metadata.get("grade", {}),
         }

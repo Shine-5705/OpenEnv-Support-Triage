@@ -55,6 +55,8 @@ def step(action: ActionModel):
         "info": info,
         "score": score,
         "task_score": _one_decimal_score(info.get("task_score", score)),
+        "final_score": _one_decimal_score(info.get("final_score", score)),
+        "normalized_score": _one_decimal_score(info.get("normalized_score", score)),
     }
 
 
@@ -65,4 +67,6 @@ def state():
     score = _one_decimal_score(grade.get("overall", 0.1))
     state["score"] = score
     state["task_score"] = score
+    state["final_score"] = score
+    state["normalized_score"] = score
     return state
